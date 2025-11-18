@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  email        String   @unique
+  senha        String
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  pedidos      Pedido[]
+}
+
+model Cliente {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  cpf          String   @unique
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  pedidos      Pedido[]
+}
+
+model Pedido {
+  id              Int        @id @default(autoincrement())
+  numeroPedido    String     @unique
+  numeroChamado   String?
+  descricao       String
+  resolucao       String?
+  numeroJit       String?
+  dataInicio      DateTime   @default(now())
+  dataAtualizacao DateTime   @default(now())
+  dataFinalizacao DateTime?
+  prioridade      Prioridade
+  situacao        Situacao?
+  situation       Situation? @default(EM_ANDAMENTO)
+  clienteId       Int
+  cliente         Cliente    @relation(fields: [clienteId], references: [id])
+
+  // A loja agora é obrigatória
+  lojaId Int
+  loja   Loja @relation(fields: [lojaId], references: [id])
+
+  historico PedidoHistorico[]
+
+  criadoPorId Int?
+  criadoPor   Usuario? @relation(fields: [criadoPorId], references: [id])
+}
+
+model PedidoHistorico {
+  id        Int      @id @default(autoincrement())
+  data      DateTime @default(now())
+  descricao String
+  pedidoId  Int
+  pedido    Pedido   @relation(fields: [pedidoId], references: [id])
+}
+
+enum Prioridade {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum Situacao {
+  ALTERACAO_DE_ENDERECO
+  ATRASO_NA_ENTREGA
+  AVARIA_DE_PRODUCAO
+  BARRAR_A_ENTREGA
+  CANCELAMENTO
+  DEVOLUCAO
+  ENTREGUE_E_NAO_RECEBIDO
+  ERRO_DE_ENDERECO
+  FALTANDO_ITEM
+}
+
+enum Situation {
+  EM_ANDAMENTO
+  FINALIZADO
+  ATRASADO
+}
+
+model Canal {
+  id           Int      @id @default(autoincrement())
+  nome         String   @unique
+  descricao    String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  // Relação 1:N com Loja
+  lojas Loja[]
+}
+
+model Loja {
+  id           Int      @id @default(autoincrement())
+  nome         String   @unique
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  // A loja pertence a um canal (marketplace)
+  canalId Int
+  canal   Canal @relation(fields: [canalId], references: [id])
+
+  // Uma loja tem vários pedidos
+  pedidos Pedido[]
+}
