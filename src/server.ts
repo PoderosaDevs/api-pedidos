@@ -16,8 +16,10 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const ALLOWED_ORIGINS = [
-  process.env.FRONTEND_URL || "https://pedidos-q5pa.vercel.app",
-];
+  process.env.FRONTEND_URL,
+  "https://pedidos-q5pa.vercel.app/",
+].filter(Boolean); // remove undefined
+
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
