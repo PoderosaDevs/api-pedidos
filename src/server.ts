@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const ALLOWED_ORIGINS = [
-  process.env.FRONTEND_URL || "http://localhost:5173",
+  process.env.FRONTEND_URL || "https://pedidos-q5pa.vercel.app",
 ];
 
 const corsOptions: CorsOptions = {
