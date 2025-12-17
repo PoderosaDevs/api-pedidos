@@ -74,7 +74,9 @@ export const deletarCanal = async (req: Request, res: Response) => {
     await prisma.canal.delete({ where: { id } });
 
     return res.json({ message: "Canal excluído com sucesso" });
-  } catch (err) {
-    return res.status(500).json({ error: "Erro ao excluir canal" });
-  }
+ } catch (err) {
+  console.error(err); // <-- log do erro real
+  return res.status(500).json({ error: "Erro ao excluir canal" });
+}
+
 };
