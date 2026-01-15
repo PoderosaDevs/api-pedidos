@@ -65,6 +65,59 @@ export const criarPedido = async (req: Request, res: Response) => {
   }
 };
 
+
+export const listarPedidosSummary = async (_req: Request, res: Response) => {
+  try {
+    const pedidos = await prisma.pedido.findMany({
+      select: {
+        id: true,
+        numeroPedido: true,
+        prioridade: true,   // ALTA, MEDIA, BAIXA
+        situation: true,    // EM_ANDAMENTO, FINALIZADO, etc
+        dataInicio: true,
+        dataAtualizacao: true,
+        
+        // Relacionamentos mínimos
+        cliente: {
+          select: { nome: true },
+        },
+        historico: {
+          select: { data: true },
+          orderBy: { data: "desc" },
+          take: 1, // Só precisamos do mais recente para o cálculo
+        },
+      },
+      // Não filtramos por status aqui para poder contar os "Resolvidos" nos cards
+      orderBy: {
+        dataAtualizacao: "desc",
+      },
+    });
+
+    const summary = pedidos.map((pedido) => {
+      // Lógica para determinar a data base do SLA:
+      // Pega a data do último histórico OU a data de atualização do pedido OU a data de início
+      const ultimaDataHistorico = pedido.historico[0]?.data;
+      const dataReferencia = ultimaDataHistorico 
+        ? new Date(ultimaDataHistorico) 
+        : (pedido.dataAtualizacao ? new Date(pedido.dataAtualizacao) : new Date(pedido.dataInicio));
+
+      return {
+        id: pedido.id,
+        numeroPedido: pedido.numeroPedido,
+        cliente: pedido.cliente?.nome || "Cliente N/A",
+        prioridade: pedido.prioridade, // Certifique-se que o Enum bate com o Front (ALTA, MEDIA, BAIXA)
+        situation: pedido.situation,   // Certifique-se que bate com (FINALIZADO, EM_ANDAMENTO, etc)
+        dataReferencia: dataReferencia.toISOString(), // Data usada para calcular o SLA
+      };
+    });
+
+    return res.json(summary);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Erro ao gerar summary de pedidos" });
+  }
+};
+
 /**
  * ✅ Lista todos os pedidos
  * GET /pedidos

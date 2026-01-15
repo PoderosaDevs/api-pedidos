@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   criarPedido,
   listarPedidos,
+  listarPedidosSummary,
   obterPedido,
   atualizarPedido,
   excluirPedido,
@@ -11,25 +12,28 @@ import {
 
 const router = Router();
 
-// Criar pedido
+// ✅ Criar pedido
 router.post("/register", criarPedido);
 
-// Listar todos
+// ✅ Summary de pedidos (IMPORTANTE: antes do /:id)
+router.get("/summary", listarPedidosSummary);
+
+// ✅ Listar todos
 router.get("/", listarPedidos);
 
-// Obter um pedido específico
+// ✅ Obter um pedido específico
 router.get("/:id", obterPedido);
 
-// Atualizar pedido (campos gerais, inclusive resolução se quiser via PUT)
+// ✅ Atualizar pedido
 router.put("/:id", atualizarPedido);
 
-// Excluir pedido
+// ✅ Excluir pedido
 router.delete("/:id", excluirPedido);
 
-// 👉 Adicionar atualização (histórico de resolução parcial)
+// 👉 Adicionar atualização (histórico)
 router.post("/:id/atualizacoes", adicionarAtualizacao);
 
-// 👉 Finalizar pedido (resolução final + situation = FINALIZADO)
+// 👉 Finalizar pedido
 router.post("/:id/finalizar", finalizarPedido);
 
 export default router;
